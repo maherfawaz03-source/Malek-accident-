@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>معرض مالك - نظام الإدارة</title>
+<style>
+:root{--bg:#f4f7fb;--card:#fff;--ink:#17202a;--muted:#6b7280;--nav:#0f1d2a;--blue:#0d6efd;--gold:#d8a83e;--red:#dc3545;--green:#198754}
+*{box-sizing:border-box}body{margin:0;font-family:Tahoma,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+button,input,select{font:inherit}.hidden{display:none!important}.login{min-height:100vh;display:grid;place-items:center;background:linear-gradient(135deg,#0f1d2a,#26394b)}
+.login-card{width:min(92vw,420px);background:white;padding:28px;border-radius:20px;box-shadow:0 20px 60px #0005;text-align:center}
+.logo{font-size:38px;font-weight:900;color:var(--gold)}.login-card input{width:100%;padding:13px;margin:7px 0;border:1px solid #d8dee8;border-radius:10px}
+.btn{border:0;border-radius:10px;padding:11px 15px;cursor:pointer;background:#e8eef7}.btn.primary{background:var(--blue);color:white}.btn.danger{background:var(--red);color:white}.btn.green{background:var(--green);color:white}
+.login-card .btn{width:100%;margin-top:10px}.hint{font-size:12px;color:var(--muted);margin-top:12px}
+.app{display:grid;grid-template-columns:235px 1fr;min-height:100vh}.side{background:var(--nav);color:#fff;padding:20px 12px;position:sticky;top:0;height:100vh}
+.brand{text-align:center;padding:10px 0 22px;border-bottom:1px solid #ffffff18}.brand b{font-size:24px;color:var(--gold)}
+.nav button{width:100%;text-align:right;background:transparent;color:#dfe8ef;border:0;padding:13px;border-radius:9px;margin:3px 0;cursor:pointer}.nav button:hover,.nav button.active{background:#0d6efd}
+.main{padding:22px}.top{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-bottom:18px}.top h1{font-size:22px;margin:0}.userbox{font-size:13px;color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.card{background:var(--card);border-radius:15px;padding:18px;box-shadow:0 4px 18px #1d355710}.stat b{font-size:28px;display:block;margin-top:8px}.actions{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:16px 0}.action{padding:20px;border:0;border-radius:15px;background:white;box-shadow:0 4px 18px #1d355710;cursor:pointer;font-weight:700}.action span{display:block;font-size:28px;margin-bottom:7px}
+.alert{padding:11px;border-radius:9px;margin:7px 0;background:#fff3cd}.alert.red{background:#f8d7da}.section{display:none}.section.active{display:block}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}.toolbar input,.toolbar select,.form input,.form select{padding:10px;border:1px solid #d7dde5;border-radius:9px;background:white}
+table{width:100%;border-collapse:collapse;background:white;border-radius:14px;overflow:hidden}th,td{padding:11px;border-bottom:1px solid #edf0f4;text-align:right}th{background:#f7f9fc;font-size:13px}
+.form{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.form .wide{grid-column:1/-1}.modal{position:fixed;inset:0;background:#0008;display:grid;place-items:center;padding:15px;z-index:10}.modalbox{background:white;border-radius:16px;padding:20px;width:min(900px,96vw);max-height:92vh;overflow:auto}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.sale-items input{width:90px}.badge{padding:4px 8px;border-radius:20px;background:#e9eef5;font-size:12px}.low{color:#b02a37;font-weight:700}
+@media(max-width:850px){.app{grid-template-columns:1fr}.side{height:auto;position:static}.nav{display:flex;overflow:auto}.nav button{min-width:120px;text-align:center}.grid,.actions{grid-template-columns:repeat(2,1fr)}.form{grid-template-columns:1fr}.main{padding:12px}}
+@media print{.side,.top,.no-print{display:none!important}.app{display:block}.main{padding:0}.section{display:none!important}#invoicePrint{display:block!important}}
+</style>
+</head>
+<body>
+<div id="login" class="login"><div class="login-card">
+<div class="logo">MALIK</div><h2>معرض مالك للإنارة الكهربائية والقطع الصناعية</h2>
+<input id="loginUser" placeholder="اسم المستخدم"><input id="loginPass" type="password" placeholder="كلمة السر">
+<button class="btn primary" onclick="doLogin()">تسجيل الدخول</button><div id="loginMsg" class="hint"></div>
+<div class="hint">الدخول الأول: admin / 1234 — غيّر كلمة السر بعد الدخول.</div>
+</div></div>
+
+<div id="app" class="app hidden">
+<aside class="side"><div class="brand"><b>MALIK</b><div>معرض مالك</div></div><div class="nav" id="nav"></div></aside>
+<main class="main"><div class="top"><h1 id="pageTitle">الرئيسية</h1><div class="userbox"><span id="who"></span> · <button class="btn" onclick="logout()">خروج</button></div></div>
+
+<section id="dashboard" class="section active">
+<div class="grid">
+<div class="card stat">مبيعات اليوم<b id="todaySales">0 ₪</b></div><div class="card stat">عدد المنتجات<b id="productCount">0</b></div>
+<div class="card stat">شيكات قريبة<b id="checkCount">0</b></div><div class="card stat">أصناف ناقصة<b id="lowCount">0</b></div>
+</div>
+<div class="actions">
+<button class="action" onclick="openSale()"><span>🛒</span>فاتورة بيع</button>
+<button class="action" onclick="showSection('receipts')"><span>💵</span>سند قبض</button>
+<button class="action" onclick="showSection('returns')"><span>↩️</span>سند مرتجع</button>
+<button class="action" onclick="showSection('products')"><span>📦</span>المنتجات</button>
+</div>
+<div class="card"><h3>تنبيهات مهمة</h3><div id="alerts"></div></div>
+</section>
+
+<section id="products" class="section"><div class="toolbar"><button class="btn primary" onclick="productModal()">+ منتج جديد</button><input id="psearch" placeholder="بحث بالاسم أو الباركود" oninput="renderProducts()"></div><div style="overflow:auto"><table><thead><tr><th>المنتج</th><th>الفئة</th><th>الوحدة</th><th>التكلفة</th><th>الجملة</th><th>القطاعي</th><th>المخزون</th><th></th></tr></thead><tbody id="productsBody"></tbody></table></div></section>
+
+<section id="customers" class="section"><div class="toolbar"><button class="btn primary" onclick="customerModal()">+ كهربجي/عميل</button><input id="csearch" placeholder="ابحث باسم الكهربجي أو زبونه" oninput="renderCustomers()"></div><div id="customersList"></div></section>
+
+<section id="warehouses" class="section"><div class="card"><h3>المخازن</h3><div id="warehouseList"></div></div></section>
+
+<section id="checks" class="section"><div class="toolbar"><button class="btn primary" onclick="checkModal()">+ تسجيل شيك</button></div><div style="overflow:auto"><table><thead><tr><th>الرقم</th><th>العميل</th><th>البنك</th><th>المبلغ</th><th>الاستحقاق</th><th>الحالة</th></tr></thead><tbody id="checksBody"></tbody></table></div></section>
+
+<section id="users" class="section"><div class="toolbar"><button class="btn primary" onclick="userModal()">+ موظف</button></div><div id="usersList"></div></section>
+
+<section id="sales" class="section"><div class="toolbar"><button class="btn primary" onclick="openSale()">+ فاتورة بيع</button></div><div style="overflow:auto"><table><thead><tr><th>رقم</th><th>التاريخ</th><th>الكهربجي / الزبون</th><th>الإجمالي</th><th>الدفع</th></tr></thead><tbody id="salesBody"></tbody></table></div></section>
+
+<section id="receipts" class="section"><div class="card"><h3>سند قبض</h3><div class="form"><select id="rCustomer"></select><input id="rAmount" type="number" placeholder="المبلغ ₪"><select id="rMethod"><option>نقدي</option><option>شيك</option></select><input id="rNote" class="wide" placeholder="البيان"><button class="btn green" onclick="saveReceipt()">حفظ سند القبض</button></div></div><div id="receiptList"></div></section>
+
+<section id="returns" class="section"><div class="card"><h3>سند مرتجع مبيعات</h3><div class="form"><select id="retSale"></select><select id="retProduct"></select><input id="retQty" type="number" step="0.01" placeholder="الكمية"><select id="retWh"></select><button class="btn danger" onclick="saveReturn()">تسجيل المرتجع</button></div><p class="hint">يرجع الصنف للمخزن ويخصم قيمته من حساب العميل وفق سعر الفاتورة الأصلية.</p></div></section>
+
+<section id="invoicePrint" class="section"></section>
+</main></div>
+<div id="modal" class="modal hidden"><div class="modalbox" id="modalbox"></div></div>
+
+<script>
+const K='malik_v1';
+const seed={users:[{id:1,name:'المدير',username:'admin',password:'1234',role:'admin',perms:['all']}],
+warehouses:[{id:1,name:'المخزن الأول'},{id:2,name:'المخزن الثاني'},{id:3,name:'المخزن الثالث'}],
+products:[],customers:[],sales:[],checks:[],receipts:[],returns:[]};
+let db=JSON.parse(localStorage.getItem(K)||'null')||seed, current=null;
+function save(){localStorage.setItem(K,JSON.stringify(db));refresh()}
+const navItems=[['dashboard','🏠 الرئيسية','dashboard'],['sales','🛒 المبيعات','sales'],['products','📦 المنتجات','products'],['warehouses','🏬 المخازن','warehouses'],['customers','👥 الكهربجي / العملاء','customers'],['receipts','💵 سند قبض','receipts'],['returns','↩️ سند مرتجع','returns'],['checks','💳 الشيكات','checks'],['users','🔐 المستخدمون','users']];
+function allowed(k){if(!current)return false;if(current.role==='admin')return true;return (current.perms||[]).includes(k)}
+function buildNav(){nav.innerHTML=navItems.filter(x=>allowed(x[2])).map(x=>`<button onclick="showSection('${x[0]}')">${x[1]}</button>`).join('')}
+function doLogin(){let u=db.users.find(x=>x.username===loginUser.value&&x.password===loginPass.value);if(!u){loginMsg.textContent='اسم المستخدم أو كلمة السر غير صحيحة';return}current=u;login.classList.add('hidden');app.classList.remove('hidden');who.textContent=u.name;buildNav();refresh()}
+function logout(){current=null;app.classList.add('hidden');login.classList.remove('hidden')}
+function showSection(id){if(!allowed(id)&&id!=='dashboard')return alert('ليس لديك صلاحية');document.querySelectorAll('.section').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');pageTitle.textContent=navItems.find(x=>x[0]===id)?.[1].replace(/^.. /,'')||id;refresh()}
+function money(n){return Number(n||0).toLocaleString('ar')+' ₪'}
+function totalStock(p){return Object.values(p.stock||{}).reduce((a,b)=>a+Number(b),0)}
+function refresh(){
+ productCount.textContent=db.products.length;
+ let today=new Date().toISOString().slice(0,10);todaySales.textContent=money(db.sales.filter(s=>s.date===today).reduce((a,s)=>a+s.total,0));
+ let low=db.products.filter(p=>totalStock(p)<=Number(p.min||0));lowCount.textContent=low.length;
+ let now=new Date(), soon=new Date(now);soon.setDate(now.getDate()+2);
+ let checksSoon=db.checks.filter(c=>c.status==='بانتظار الصرف'&&new Date(c.due)<=soon&&new Date(c.due)>=new Date(now.toDateString()));checkCount.textContent=checksSoon.length;
+ alerts.innerHTML=(low.map(p=>`<div class="alert ${totalStock(p)<=0?'red':''}">📦 ${p.name}: ${totalStock(p)<=0?'نفذت الكمية':'المخزون منخفض'} — المتوفر ${totalStock(p)} ${p.unit}</div>`).join('')+
+ checksSoon.map(c=>`<div class="alert">💳 شيك ${c.no} بقيمة ${money(c.amount)} موعده ${c.due}</div>`).join(''))||'<div class="hint">لا توجد تنبيهات حالياً</div>';
+ renderProducts();renderCustomers();renderWarehouses();renderChecks();renderUsers();renderSales();fillSelects();renderReceipts()
+}
+function modal(html){modalbox.innerHTML=html;document.getElementById('modal').classList.remove('hidden')}
+function closeModal(){document.getElementById('modal').classList.add('hidden')}
+function productModal(id){
+ let p=db.products.find(x=>x.id===id)||{name:'',category:'',unit:'عدد',cost:'',wholesale:'',retail:'',barcode:'',min:10,stock:{}};
+ modal(`<h2>${id?'تعديل':'إضافة'} منتج</h2><div class="form">
+ <input id="pn" placeholder="اسم المنتج" value="${p.name}"><input id="pcat" placeholder="الفئة" value="${p.category}"><select id="pu"><option ${p.unit==='عدد'?'selected':''}>عدد</option><option ${p.unit==='متر'?'selected':''}>متر</option></select>
+ <input id="pcost" type="number" placeholder="سعر التكلفة" value="${p.cost}"><input id="pwh" type="number" placeholder="سعر الجملة" value="${p.wholesale}"><input id="pret" type="number" placeholder="سعر القطاعي" value="${p.retail}">
+ <input id="pbar" placeholder="باركود اختياري" value="${p.barcode||''}"><input id="pmin" type="number" placeholder="الحد الأدنى" value="${p.min}">
+ ${db.warehouses.map(w=>`<input id="st${w.id}" type="number" step="0.01" placeholder="${w.name}" value="${p.stock[w.id]||0}">`).join('')}
+ </div><div class="row" style="margin-top:15px"><button class="btn primary" onclick="saveProduct(${id||0})">حفظ</button><button class="btn" onclick="closeModal()">إلغاء</button></div>`)
+}
+function saveProduct(id){let p=id?db.products.find(x=>x.id===id):{id:Date.now(),stock:{}};Object.assign(p,{name:pn.value,category:pcat.value,unit:pu.value,cost:+pcost.value,wholesale:+pwh.value,retail:+pret.value,barcode:pbar.value,min:+pmin.value});db.warehouses.forEach(w=>p.stock[w.id]=+document.getElementById('st'+w.id).value);if(!id)db.products.push(p);save();closeModal()}
+function renderProducts(){if(!productsBody)return;let q=(psearch?.value||'').toLowerCase();productsBody.innerHTML=db.products.filter(p=>(p.name+' '+p.barcode).toLowerCase().includes(q)).map(p=>`<tr><td>${p.name}<br><small>${p.barcode||''}</small></td><td>${p.category}</td><td>${p.unit}</td><td>${allowed('cost')||current?.role==='admin'?money(p.cost):'••••'}</td><td>${money(p.wholesale)}</td><td>${money(p.retail)}</td><td class="${totalStock(p)<=p.min?'low':''}">${totalStock(p)}</td><td><button class="btn" onclick="productModal(${p.id})">تعديل</button></td></tr>`).join('')}
+function customerModal(){modal(`<h2>إضافة كهربجي / عميل رئيسي</h2><div class="form"><input id="cn" placeholder="اسم الكهربجي"><input id="cp" placeholder="الهاتف"><input id="csubs" class="wide" placeholder="زبائنه/مشاريعه، افصل بينهم بفاصلة"></div><div class="row" style="margin-top:15px"><button class="btn primary" onclick="saveCustomer()">حفظ</button><button class="btn" onclick="closeModal()">إلغاء</button></div>`)}
+function saveCustomer(){db.customers.push({id:Date.now(),name:cn.value,phone:cp.value,subs:csubs.value.split(',').map(x=>x.trim()).filter(Boolean),balance:0});save();closeModal()}
+function renderCustomers(){if(!customersList)return;let q=(csearch?.value||'').toLowerCase();customersList.innerHTML=db.customers.filter(c=>(c.name+' '+c.subs.join(' ')).toLowerCase().includes(q)).map(c=>`<div class="card" style="margin:8px 0"><b>${c.name}</b> <span class="badge">${c.phone||''}</span><div>الزبائن/المشاريع: ${c.subs.map(s=>`<span class="badge">${s}</span>`).join(' ')||'—'}</div><div>الرصيد: <b>${money(c.balance)}</b></div></div>`).join('')}
+function renderWarehouses(){warehouseList.innerHTML=db.warehouses.map(w=>`<div class="card" style="margin:8px 0"><b>${w.name}</b> — إجمالي وحدات مخزنة: ${db.products.reduce((a,p)=>a+Number(p.stock?.[w.id]||0),0)}</div>`).join('')}
+function checkModal(){modal(`<h2>تسجيل شيك وارد</h2><div class="form"><input id="chno" placeholder="رقم الشيك"><select id="chcust">${db.customers.map(c=>`<option value="${c.id}">${c.name}</option>`).join('')}</select><input id="chbank" placeholder="البنك"><input id="chamt" type="number" placeholder="المبلغ"><input id="chdue" type="date"></div><div class="row" style="margin-top:15px"><button class="btn primary" onclick="saveCheck()">حفظ</button><button class="btn" onclick="closeModal()">إلغاء</button></div>`)}
+function saveCheck(){db.checks.push({id:Date.now(),no:chno.value,customerId:+chcust.value,bank:chbank.value,amount:+chamt.value,due:chdue.value,status:'بانتظار الصرف'});save();closeModal()}
+function renderChecks(){checksBody.innerHTML=db.checks.map(c=>`<tr><td>${c.no}</td><td>${db.customers.find(x=>x.id===c.customerId)?.name||''}</td><td>${c.bank}</td><td>${money(c.amount)}</td><td>${c.due}</td><td><select onchange="db.checks.find(x=>x.id==${c.id}).status=this.value;save()"><option ${c.status==='بانتظار الصرف'?'selected':''}>بانتظار الصرف</option><option ${c.status==='تم الصرف'?'selected':''}>تم الصرف</option><option ${c.status==='مرتجع'?'selected':''}>مرتجع</option><option ${c.status==='ملغي'?'selected':''}>ملغي</option></select></td></tr>`).join('')}
+function userModal(){modal(`<h2>إضافة موظف</h2><div class="form"><input id="un" placeholder="اسم الموظف"><input id="uu" placeholder="اسم المستخدم"><input id="up" type="password" placeholder="كلمة السر"></div><h3>الصلاحيات</h3><div class="row">${['dashboard','sales','products','warehouses','customers','receipts','returns','checks','cost'].map(p=>`<label><input type="checkbox" class="perm" value="${p}"> ${p==='cost'?'رؤية سعر التكلفة':navItems.find(x=>x[2]===p)?.[1]||p}</label>`).join('')}</div><div class="row" style="margin-top:15px"><button class="btn primary" onclick="saveUser()">حفظ</button><button class="btn" onclick="closeModal()">إلغاء</button></div>`)}
+function saveUser(){db.users.push({id:Date.now(),name:un.value,username:uu.value,password:up.value,role:'employee',perms:[...document.querySelectorAll('.perm:checked')].map(x=>x.value)});save();closeModal()}
+function renderUsers(){if(!usersList)return;usersList.innerHTML=db.users.map(u=>`<div class="card" style="margin:8px 0"><b>${u.name}</b> — ${u.role==='admin'?'مدير':'موظف'}<div class="hint">${u.role==='admin'?'كل الصلاحيات':(u.perms||[]).join('، ')}</div></div>`).join('')}
+function openSale(){if(!allowed('sales'))return alert('ليس لديك صلاحية');let opts=db.customers.flatMap(c=>[`<option value="${c.id}|">${c.name} — شخصي</option>`,...c.subs.map(s=>`<option value="${c.id}|${s}">${c.name} ← ${s}</option>`)]).join('');modal(`<h2>فاتورة بيع جديدة</h2><div class="form"><select id="scust">${opts}</select><select id="smethod"><option>نقدي</option><option>شيك</option><option>آجل</option></select><select id="swh">${db.warehouses.map(w=>`<option value="${w.id}">${w.name}</option>`).join('')}</select></div><h3>الأصناف</h3><div class="row"><select id="sprod">${db.products.map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}</select><input id="sqty" type="number" step="0.01" value="1"><select id="sprice"><option value="retail">قطاعي</option><option value="wholesale">جملة</option></select><button class="btn" onclick="addSaleItem()">إضافة</button></div><div id="saleRows" class="sale-items"></div><h2>الإجمالي: <span id="saleTotal">0 ₪</span></h2><button class="btn green" onclick="saveSale()">حفظ وطباعة</button> <button class="btn" onclick="closeModal()">إلغاء</button>`);window.tmpItems=[]}
+function addSaleItem(){let p=db.products.find(x=>x.id==sprod.value),q=+sqty.value,price=+p[sprice.value];tmpItems.push({productId:p.id,qty:q,price});renderSaleItems()}
+function renderSaleItems(){saleRows.innerHTML=tmpItems.map((i,n)=>{let p=db.products.find(x=>x.id===i.productId);return `<div class="card row"><b>${p.name}</b><span>${i.qty} ${p.unit}</span><span>${money(i.price)}</span><span>${money(i.qty*i.price)}</span><button class="btn danger" onclick="tmpItems.splice(${n},1);renderSaleItems()">حذف</button></div>`}).join('');saleTotal.textContent=money(tmpItems.reduce((a,i)=>a+i.qty*i.price,0))}
+function saveSale(){if(!tmpItems.length)return alert('أضف صنفاً');let [cid,sub]=scust.value.split('|'),wh=+swh.value;for(let i of tmpItems){let p=db.products.find(x=>x.id===i.productId);if((p.stock[wh]||0)<i.qty)return alert('الكمية غير كافية: '+p.name)}tmpItems.forEach(i=>{db.products.find(x=>x.id===i.productId).stock[wh]-=i.qty});let total=tmpItems.reduce((a,i)=>a+i.qty*i.price,0),sale={id:Date.now(),no:db.sales.length+1,date:new Date().toISOString().slice(0,10),customerId:+cid,sub,warehouseId:wh,method:smethod.value,items:[...tmpItems],total};db.sales.push(sale);if(sale.method==='آجل')db.customers.find(x=>x.id===+cid).balance+=total;save();closeModal();printInvoice(sale)}
+function renderSales(){salesBody.innerHTML=db.sales.slice().reverse().map(s=>{let c=db.customers.find(x=>x.id===s.customerId);return `<tr><td>${s.no}</td><td>${s.date}</td><td>${c?.name||''}${s.sub?' ← '+s.sub:''}</td><td>${money(s.total)}</td><td>${s.method}</td></tr>`}).join('')}
+function printInvoice(s){let c=db.customers.find(x=>x.id===s.customerId);invoicePrint.innerHTML=`<div style="padding:30px;background:white"><h1>معرض مالك للإنارة الكهربائية والقطع الصناعية</h1><hr><h2>فاتورة بيع رقم ${s.no}</h2><p>التاريخ: ${s.date} &nbsp; | &nbsp; الكهربجي/العميل: ${c?.name||''} ${s.sub?' — الزبون/المشروع: '+s.sub:''}</p><table><tr><th>الصنف</th><th>الوحدة</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th></tr>${s.items.map(i=>{let p=db.products.find(x=>x.id===i.productId);return `<tr><td>${p.name}</td><td>${p.unit}</td><td>${i.qty}</td><td>${money(i.price)}</td><td>${money(i.qty*i.price)}</td></tr>`}).join('')}</table><h2>الإجمالي: ${money(s.total)}</h2><p>طريقة الدفع: ${s.method}</p><br><br><p>توقيع المستلم: ____________________</p></div>`;showSection('invoicePrint');setTimeout(()=>window.print(),200)}
+function fillSelects(){let opts=db.customers.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');if(rCustomer)rCustomer.innerHTML=opts;if(retSale)retSale.innerHTML=db.sales.map(s=>`<option value="${s.id}">فاتورة ${s.no}</option>`).join('');if(retProduct)retProduct.innerHTML=db.products.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');if(retWh)retWh.innerHTML=db.warehouses.map(w=>`<option value="${w.id}">${w.name}</option>`).join('')}
+function saveReceipt(){let c=db.customers.find(x=>x.id==rCustomer.value),amt=+rAmount.value;c.balance-=amt;db.receipts.push({id:Date.now(),customerId:c.id,amount:amt,method:rMethod.value,note:rNote.value,date:new Date().toISOString().slice(0,10)});save();alert('تم حفظ سند القبض')}
+function renderReceipts(){if(!receiptList)return;receiptList.innerHTML=db.receipts.slice().reverse().map(r=>`<div class="card" style="margin:8px 0">سند قبض — ${db.customers.find(c=>c.id===r.customerId)?.name||''} — <b>${money(r.amount)}</b> — ${r.method}</div>`).join('')}
+function saveReturn(){let s=db.sales.find(x=>x.id==retSale.value),pid=+retProduct.value,q=+retQty.value,item=s?.items.find(i=>i.productId===pid);if(!item)return alert('هذا الصنف غير موجود في الفاتورة');if(q>item.qty)return alert('المرتجع أكبر من كمية الفاتورة');let val=q*item.price;db.products.find(p=>p.id===pid).stock[+retWh.value]=(db.products.find(p=>p.id===pid).stock[+retWh.value]||0)+q;let c=db.customers.find(x=>x.id===s.customerId);c.balance-=val;db.returns.push({id:Date.now(),saleId:s.id,productId:pid,qty:q,value:val});save();alert('تم تسجيل المرتجع وتحديث المخزون والحساب')}
+refresh();
+</script></body></html>
